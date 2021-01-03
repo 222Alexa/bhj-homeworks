@@ -1,38 +1,58 @@
 'use strict';
 
-
-const interestList = document.querySelector('.interests_main');
-interestList.addEventListener('change', (event) => {
+function clickCheckBox(event) {
     if (event.target.closest('.interest').querySelector('.interests')) {
-        const arrElements = Array.from(event.target.closest('.interest').querySelectorAll('.interest__check'));
-        arrElements.forEach(check => {
-            check.checked = event.target.checked;
+        const checkArr = Array.from(event.target.closest('.interest').querySelectorAll('.interest__check'));
+        checkArr.forEach(elem => {
+            elem.checked = event.target.checked;
+            elem.indeterminate = false;
         });
     }
 
-    function isCheckedElement(element) {
-        if (element.closest('.interest').querySelector('interests')) {
-            const checkedElement = element.closest('.interest').querySelectorAll('.interest__check');
-            const checkedParent = element.parentElement;
-            if (checkedElement.some(e => e.checked === false)) {
-                checkedParent.parentElement.checked = false;
-                checkedParent.parentElement.indeterminate = true;
+    function isCheckedElement(e) {
+        if (!e.closest('.interests').classList.contains('.interest__main')) {
+            const siblings = Array.from(e.closest('.interests').querySelectorAll('.interest__check'));
+            const parent = e.closest('.interests').closest('.interest').querySelector('.interest__check');
+            if (siblings.every(e => e.checked === true)) { //если все дочерние элементы с галкой
+                parent.checked = true;
+                parent.indeterminate = false;
             }
-            if (checkedElement.every(e => e.checked === false)) {
-                checkedParent.parentElement.checked = false;
-                checkedParent.parentElement.indeterminate = false;
-            } else {
-                checkedParent.parentElement.checked = false;
-                checkedParent.parentElement.indeterminate = true;
+            else if (siblings.every(e => e.checked === false)) { //если все дочерние элементы без галки
+                parent.checked = false;
+                parent.indeterminate = false;
             }
+            else { //здесь должен быть метод some, но и без него сработает, если хотя бы один дочерний элемент без галки
+                parent.checked = false;
+                parent.indeterminate = true;
+            }
+            isCheckedElement(parent);
         }
-        isCheckedElement(checkedElement);
     }
+    isCheckedElement(event.target.closest('.interest__check'));
+}
+Array.from(document.querySelectorAll('.interest__check')).forEach(element => {
+    element.addEventListener('change', clickCheckBox);
 });
-/*
-почти, почти все работает...но не работает как мне надо(
-не применяется indeterminate. Я почти уверена, что не дописала еще один вызов isCheckedElement, н оне понимаю - куда его пристроить.
-свмый бестолковый вопрос в этом, я не понимаю - куда в консоли смтореть, где проходит check на элемент. я порылась во вкладке Event Listeners, там есть мой обработчик -...и всё. сходила на стековерфло - там предлагается написать проверочный скрипт в самом коде. 
-есть же какой-то простой способ ставить в браузере галку на элементе и в консоли видеть - checked он или нет? Подскажите, пожалуйста!
 
-*/
+/* Дефолтный вариант:
+function clickCheckBox(event) {
+    if (event.target.closest('.interest').querySelector('.interests')) {
+        const checkArr = Array.from(event.target.closest('.interest').querySelectorAll('.interest__check'));
+        checkArr.forEach(elem => {
+            elem.checked = event.target.checked;
+        });
+    }
+
+    function isCheckedElement(e) {
+        let target = e.target.closest('.interests').closest('.interest').querySelectorAll('.interest__check');
+        if (!e.closest('.interest').querySelector('.interests')) {
+            const siblings = Array.from(e.closest('.interests').querySelectorAll('.interest__check'));
+            const check = siblings.every(e => e.checked);
+            check ? target.checked = true : target.checked = false;
+        }
+    }
+    }
+    Array.from(document.querySelectorAll('.interest__check')).forEach(element => {
+        element.addEventListener('change', clickCheckBox);
+    });
+    */
