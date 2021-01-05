@@ -12,11 +12,8 @@ const addTask = function(){
               <a href="#" class="task__remove">&times;</a>
             </div>`)
     taskInput.value = '';
+        console.log(taskList);
 }
-}
-const removeTask = function() {
-    const deletedTask = document.querySelector('.task');
-    deletedTask.remove();
 }
 
 taskInput.addEventListener('keyup', (e) =>{
@@ -31,10 +28,9 @@ buttonAddTask.addEventListener('click', (e) => {
 });
 
 taskList.addEventListener('click', (e) => {
-    if(!e.target.classList.contains('task__remove')){
-        return;
-    }else {
-        removeTask();
+    if(e.target.classList.contains('task__remove')){
+        console.log(e.target.classList.contains('task__remove'));
+          e.target.closest('.task').remove();
     }
 });
 
