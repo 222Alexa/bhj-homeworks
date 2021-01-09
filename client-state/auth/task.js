@@ -1,4 +1,5 @@
 'use strict';
+
 const form = document.getElementById('signin');
 const formAuth = document.getElementById('signin__form');
 const welcome = document.getElementById('welcome');
@@ -23,7 +24,8 @@ formAuth.addEventListener('submit', e => {
 btnExit.addEventListener('click', () => {
     localStorage.removeItem('userId');
     formAuth.reset();
-    document.location.reload();
+    welcome.classList.remove('welcome_active');
+    form.classList.add('signin_active');
 });
 
 function shippingRequest() {
@@ -35,7 +37,7 @@ function shippingRequest() {
             const data = JSON.parse(xhr.responseText);
             if (data.success) {
                 localStorage.userId = data.user_id;
-                userId.textContent = localStorage.user_id;
+                userId.textContent = localStorage.userId;//задает id в блок приветствие
                 form.classList.remove('signin_active');
                 welcome.classList.add('welcome_active');
             }
