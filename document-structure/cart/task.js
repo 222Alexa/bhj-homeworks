@@ -2,6 +2,7 @@
 const addCart = Array.from(document.querySelectorAll('.product__add'));
 const quantityControl = Array.from(document.querySelectorAll(".product__quantity-control"));
 const cart = document.querySelector('.cart__products');
+
 quantityControl.forEach(element => element.addEventListener('click', isChangeQuantity));
 addCart.forEach(element => {
     element.addEventListener('click', addProductToCart);
@@ -11,6 +12,7 @@ cart.addEventListener('click', (e) => {
         e.target.closest('.cart__product').remove();
     }
     isProductstoCart();
+    
 });
 
 function isProductstoCart() { //Проверка корзины - есть ли в ней товар
@@ -34,7 +36,7 @@ function isChangeQuantity(e) { //проверка количества това�
     else {
         quantity.innerText = +quantity.innerText + 1;
     }
-}
+ }
 
 function addProductToCart(e) {
     const product = e.target.closest('.product');
@@ -56,40 +58,31 @@ function addProductToCart(e) {
 С помощью setTimeout/setInterval в течение заданного количества шагов постоянно уменьшать разницу между двумя картинками
 По окончанию анимации удалить изображение-копию 
 
-      
-   
-        //const clonImg = productImg.cloneNode(); // и когда я пытаюсь использовать ранее объявленную const productImg, то с ней не работает ни cloneNode() ни getBoundingClientRect()...почему?
-        
-        const image = e.target.closest('.product').querySelector('img');// клонируем изображение товара в каталоге
+   */
+        const image = e.target.closest('.product').querySelector('img'); // клонируем изображение товара в каталоге
         const clonImg = image.cloneNode();
-       
-        const clonImgLeft = image.getBoundingClientRect().left;// получаем координаты Х товара в каталоге
+        const clonImgLeft = image.getBoundingClientRect().left; // получаем координаты Х товара в каталоге
         const clonImgTop = image.getBoundingClientRect().top; // получаем координаты Y товара в каталоге
+        clonImg.style.left = clonImgLeft + 'px'; //добавляем позиционирование блока картинки
+        clonImg.style.top = clonImgTop + 'px';
         clonImg.style.position = 'fixed';
-        
         product.appendChild(clonImg); //добавляем клон в разметку
-        
-        
-        
-        const flyImg = searchProduct.querySelector('img'); // записываем изображение товара корзине
-
+        const flyImg = searchProduct.querySelector('.img'); // записываем изображение товара корзине
         const flyImgLeft = searchProduct.getBoundingClientRect().left; // получаем координаты Х товара в корзине
-        const flyImgTop = searchProduct.getBoundingClientRect().top ;  // получаем координаты Y товара в корзине
-        const differenceLeft = (flyImgLeft - clonImgLeft)/15; //получаем разницу между координатами и задаем 15 шагов
-        const differenceTop =  (flyImgTop - clonImgTop)/15;
-
-        
-        const startFlyImg = Date.now();
+        const flyImgTop = searchProduct.getBoundingClientRect().top; // получаем координаты Y товара в корзине
+        const differenceLeft = (clonImgLeft - flyImgLeft) / 50; //получаем разницу между координатами и задаем 50 шагов
+        const differenceTop = (clonImgTop - flyImgTop) / 50;
         let timerFlyImg = setInterval(() => {
-            if (Date.now() - startFlyImg >= 200) {
+            const box = clonImg.getBoundingClientRect();
+            if (box.top <= flyImgTop || box.left >= flyImgLeft) {
                 clonImg.remove();
                 clearInterval(timerFlyImg);
-             
             }
-            animation(clonImg, 'left', differenceLeft );
-            animation(clonImg, 'top', differenceTop );
-        }, 0);
-        c анимацией получилась ерунда. Все летит, но не туда...       */
+            clonImg.style.left = box.left - differenceLeft + 'px';
+            clonImg.style.top = box.top - differenceTop + 'px';
+        }, 10);
+        //animation(clonImg, 'left', differenceLegit addft );
+        animation(clonImg, 'top', differenceTop);
     }
     else { //В корзине этого товара еще нет
         cart.insertAdjacentHTML('beforeEnd', `<div class="cart__product" data-id="${productId}">
@@ -99,8 +92,14 @@ function addProductToCart(e) {
                 </div>`);
     }
     isProductstoCart();
+    
 }
 
 function animation(element, property, diff) {
-    element.style[property] = element.style[property] + diff  + "px";
+    let coords = element.getBoundingClientRect();
+    element.style.left = coords.left + diff + 'px';
+    element.style.top = coords.top + diff + 'px';
 }
+
+
+
