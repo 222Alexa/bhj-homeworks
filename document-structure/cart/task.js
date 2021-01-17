@@ -12,15 +12,14 @@ cart.addEventListener('click', (e) => {
         e.target.closest('.cart__product').remove();
     }
     isProductstoCart();
-    
+
 });
 
 function isProductstoCart() { //Проверка корзины - есть ли в ней товар
     const cartContainer = document.querySelector('.cart');
     if (cart.querySelector('.cart__product') === null) {
         cartContainer.classList.add('cart__hidden'); // - нет товара - скрыть корзину
-    }
-    else {
+    } else {
         cartContainer.classList.remove('cart__hidden'); // - есть - показать корзину
     }
 }
@@ -32,21 +31,20 @@ function isChangeQuantity(e) { //проверка количества това�
         if (+quantity.innerText <= 0) {
             quantity.innerText = 1;
         }
-    }
-    else {
+    } else {
         quantity.innerText = +quantity.innerText + 1;
     }
- }
+}
 
 function addProductToCart(e) {
     const product = e.target.closest('.product');
     const productId = product.dataset.id;
-    const productValue = product.querySelector('.product__quantity-value').innerText;
+    const productQuantity = product.querySelector('.product__quantity-value').innerText;
     const productImg = product.querySelector('.product__image').getAttribute('src');
     let searchProduct = Array.from(document.querySelectorAll('.cart__product')).find(item => item.dataset.id === productId);
     if (searchProduct) { //в корзине уже есть такой товар
         let countProductToBasket = searchProduct.querySelector('.cart__product-count');
-        countProductToBasket.innerText = Number(countProductToBasket.innerText) + Number(productValue);
+        countProductToBasket.innerText = Number(countProductToBasket.innerText) + Number(productQuantity);
         /*
 
 При реализации анимации, вам необходимо:
@@ -81,18 +79,18 @@ function addProductToCart(e) {
             clonImg.style.left = box.left - differenceLeft + 'px';
             clonImg.style.top = box.top - differenceTop + 'px';
         }, 10);
-        //animation(clonImg, 'left', differenceLegit addft );
+        //animation(clonImg, 'left', differenceLeft );
         animation(clonImg, 'top', differenceTop);
-    }
-    else { //В корзине этого товара еще нет
+    } else { //В корзине этого товара еще нет
         cart.insertAdjacentHTML('beforeEnd', `<div class="cart__product" data-id="${productId}">
                     <img class="cart__product-image" src="${productImg}">
-                    <div class="cart__product-count">${productValue}</div>
+                    <div class="cart__product-count">${productQuantity}</div>
                     <span><a href=# class = "cart__remove"></a></span>
                 </div>`);
     }
     isProductstoCart();
-    
+    addProductToStorage(productId, productImg, productQuantity);
+
 }
 
 function animation(element, property, diff) {
@@ -102,4 +100,42 @@ function animation(element, property, diff) {
 }
 
 
+//LocalStorage
+// Здесь проблема: поняла, что корзина и продукты в ней в LS должна заполняться и представляться как объект, сохраняться как строка. и я перебираю  корзину LS в попытке  заполнить ее, и ничего не получается
+function onload() {
+    let basketStorage = localStorage.getItem('basket');
+    basketStorage = basketStorage ? JSON.parse(basketStorage) : {};
+    if (basketStorage.length != 0) {
+        document.querySelector('.cart').classList.remove('cart__hidden');
+    }
+    Object.values(basketStorage).forEach(element => {
+        const {
+            id,
+            img,
+            quantity
+        } = element;
+        cart.insertAdjacentHTML('beforeEnd', `<div class="cart__product" data-id="${id}">
+                    <img class="cart__product-image" src="${img}">
+                    <div class="cart__product-count">${quantity}</div>
+                    <span><a href=# class = "cart__remove"></a></span>
+                </div>`);
+    });
+}
 
+function addProductToStorage(productId, productImg, productQuantity) {
+    let basketStorage = localStorage.getItem('basket');
+    basketStorage = basketStorage ? JSON.parse(basketStorage) : {};
+    if (basketStorage[productId]) {
+        basketStorage[productId].quantity += productQuantity;
+    } else {
+        basketStorage[productId] = {
+            id: productId,
+            img: productImg,
+            quantity: productQuantity //здесь количество товаров в корзине не суммируется, а конкатенируется  - 1111111
+        };
+    }
+    localStorage.setItem('basket', JSON.stringify(basketStorage));
+}
+
+
+document.addEventListener('DOMContentLoaded', onload);
