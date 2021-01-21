@@ -4,18 +4,24 @@ const quantityControl = Array.from(document.querySelectorAll(".product__quantity
 const cart = document.querySelector('.cart__products');
 
 quantityControl.forEach(element => element.addEventListener('click', isChangeQuantity));
+
 addCart.forEach(element => {
     element.addEventListener('click', addProductToCart);
 });
-cart.addEventListener('click', (e) => {
-    if (e.target.classList.contains('cart__remove')) {
-        e.target.closest('.cart__product').remove();
-    }
-    isProductstoCart();
 
+cart.addEventListener('click', (e) => {
+
+    if (!e.target.classList.contains('cart__remove')) return;
+    const productDel = e.target.closest('.cart__product');
+    const productDelId = productDel.dataset.id;
+    removeProduct(productDelId);
+    productDel.remove();
+    isProductstoCart();
 });
 
+
 function isProductstoCart() { //Проверка корзины - есть ли в ней товар
+
     const cartContainer = document.querySelector('.cart');
     if (cart.querySelector('.cart__product') === null) {
         cartContainer.classList.add('cart__hidden'); // - нет товара - скрыть корзину
@@ -25,6 +31,7 @@ function isProductstoCart() { //Проверка корзины - есть ли 
 }
 
 function isChangeQuantity(e) { //проверка количества товара
+
     const quantity = e.target.closest(".product__quantity-controls").querySelector(".product__quantity-value");
     if (e.target.classList.contains("product__quantity-control_dec")) {
         quantity.innerText = +quantity.innerText - 1;
@@ -45,18 +52,7 @@ function addProductToCart(e) {
     if (searchProduct) { //в корзине уже есть такой товар
         let countProductToBasket = searchProduct.querySelector('.cart__product-count');
         countProductToBasket.innerText = Number(countProductToBasket.innerText) + Number(productQuantity);
-        /*
 
-При реализации анимации, вам необходимо:
-
-Получить у изображения-продукта его координаты через getBoundingClientRect
-Получить у изображения в корзине его координаты через getBoundingClientRect
-Высчитать разницу между двумя изображениями по оси X и по оси Y
-Задать количество шагов, за которое одно изображение «настигнет другое»
-С помощью setTimeout/setInterval в течение заданного количества шагов постоянно уменьшать разницу между двумя картинками
-По окончанию анимации удалить изображение-копию 
-
-   */
         const image = e.target.closest('.product').querySelector('img'); // клонируем изображение товара в каталоге
         const clonImg = image.cloneNode();
         const clonImgLeft = image.getBoundingClientRect().left; // получаем координаты Х товара в каталоге
@@ -65,7 +61,7 @@ function addProductToCart(e) {
         clonImg.style.top = clonImgTop + 'px';
         clonImg.style.position = 'fixed';
         product.appendChild(clonImg); //добавляем клон в разметку
-        const flyImg = searchProduct.querySelector('.img'); // записываем изображение товара корзине
+        //const flyImg = searchProduct.querySelector('.img'); // записываем изображение товара корзине
         const flyImgLeft = searchProduct.getBoundingClientRect().left; // получаем координаты Х товара в корзине
         const flyImgTop = searchProduct.getBoundingClientRect().top; // получаем координаты Y товара в корзине
         const differenceLeft = (clonImgLeft - flyImgLeft) / 50; //получаем разницу между координатами и задаем 50 шагов
@@ -90,7 +86,6 @@ function addProductToCart(e) {
     }
     isProductstoCart();
     addProductToStorage(productId, productImg, productQuantity);
-
 }
 
 function animation(element, property, diff) {
@@ -99,16 +94,21 @@ function animation(element, property, diff) {
     element.style.top = coords.top + diff + 'px';
 }
 
-
 //LocalStorage
-// Здесь проблема: поняла, что корзина и продукты в ней в LS должна заполняться и представляться как объект, сохраняться как строка. и я перебираю  корзину LS в попытке  заполнить ее, и ничего не получается
-function onload() {
+
+function getStorage() {
     let basketStorage = localStorage.getItem('basket');
     basketStorage = basketStorage ? JSON.parse(basketStorage) : {};
-    if (basketStorage.length != 0) {
+    return basketStorage;
+}
+
+
+function onload() {
+    getStorage();
+    if (getStorage().length !== 0) {
         document.querySelector('.cart').classList.remove('cart__hidden');
     }
-    Object.values(basketStorage).forEach(element => {
+    Object.values(getStorage()).forEach(element => {
         const {
             id,
             img,
@@ -120,21 +120,33 @@ function onload() {
                     <span><a href=# class = "cart__remove"></a></span>
                 </div>`);
     });
+    isProductstoCart();
 }
 
 function addProductToStorage(productId, productImg, productQuantity) {
     let basketStorage = localStorage.getItem('basket');
     basketStorage = basketStorage ? JSON.parse(basketStorage) : {};
     if (basketStorage[productId]) {
-        basketStorage[productId].quantity += productQuantity;
+        basketStorage[productId].quantity += Number(productQuantity);
     } else {
         basketStorage[productId] = {
             id: productId,
             img: productImg,
-            quantity: productQuantity //здесь количество товаров в корзине не суммируется, а конкатенируется  - 1111111
+            quantity: Number(productQuantity)
         };
     }
     localStorage.setItem('basket', JSON.stringify(basketStorage));
+}
+
+function removeProduct(productDelId) { //Удаление товара из LS
+
+    let basketStorage = localStorage.getItem('basket');
+    basketStorage = basketStorage ? JSON.parse(basketStorage) : {};
+    delete basketStorage[productDelId];
+      
+    //basketStorage = basketStorage.filter((value) => value.dataset.id !==productDelId); Здесь изначала хотела использовать этот код, но он не срабатывает. консоль говорит basketStorage.filter is not a function и соответственно, товары не удаляются
+    
+      localStorage.setItem('basket', JSON.stringify(basketStorage));
 }
 
 
